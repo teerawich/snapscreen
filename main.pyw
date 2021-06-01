@@ -3,14 +3,20 @@ import uvicorn
 import time
 import pyautogui
 import os
+import mss
+import base64
+from PIL import Image
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from dotenv import dotenv_values
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from infi.systray import SysTrayIcon
 
 app = FastAPI()
 app.mount("/img", StaticFiles(directory="static"), name="static")
 config = dotenv_values(".env")
+hover_text = "Holistic Snap Short Agent"
 
 
 origins = [
@@ -40,11 +46,30 @@ def screen_capture():
     file_name = "{}{}".format((round(time.time() * 1000)), ".png")
     data_path = config["IMG_PATH"]
     static_path = "{}/{}".format(data_path, file_name)
-    image = pyautogui.screenshot()
-    image.save(static_path)
+    with mss.mss() as mss_instance:
+        monitor = mss_instance.monitors[0]
+        screenshot = mss_instance.grab(monitor)
+        mss_instance.shot(mon=-1, output=static_path)
     msg = {"file_name": file_name, "link": "http://localhost:{}/img/{}".format(config["SERVER_PORT"], file_name)}
     return msg
 
+
+@app.get("/g/{img_name}")
+def get_image(img_name: str):
+    data_path = config["IMG_PATH"]
+    static_path = "{}/{}".format(data_path, img_name)
+    return FileResponse(static_path, media_type='image/png')
+
+
+@app.get("/b64/{img_name}")
+def get_image_base64(img_name: str):
+    data_path = config["IMG_PATH"]
+    static_path = "{}/{}".format(data_path, img_name)
+    encode_img = ""
+    with open(static_path, 'rb') as image:
+        encode_img = base64.b64encode(image.read())
+
+    return {"encode" : encode_img}
 
 def delete_files_older():
     deleted_files_count = 0
@@ -76,8 +101,11 @@ def get_file_or_folder_age(path):
     return ctime
 
 
-# Press the green button in the gutter to run the script.
+def bye(self):
+    os._exit(0)
+
+
 if __name__ == '__main__':
-    print("images older than {} days will be removed".format(config["IMG_DAY_TMP"]))
-    print("images is removed: {}".format(delete_files_older()))
-    uvicorn.run("main:app", host="127.0.0.1", port=int(config["SERVER_PORT"]), log_level="info")
+    sysTrayIcon = SysTrayIcon("HPCM.ico", hover_text,on_quit=bye)
+    sysTrayIcon.start()
+    uvicorn.run(app, host="127.0.0.1", port=int(config["SERVER_PORT"]), log_level="info")    
