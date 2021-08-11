@@ -19,12 +19,14 @@ config = dotenv_values(".env")
 hover_text = "Holistic Snap Short Agent"
 
 
-origins = [
-    "{}".format(config["CORS_HTTP_URL"]),
-    "{}".format(config["CORS_HTTPS_URL"]),
-    "{}:{}".format(config["CORS_HTTP_URL"], config["CORS_PORT"]),
-    "{}:{}".format(config["CORS_HTTPS_URL"], config["CORS_PORT"]),
-]
+#origins = [
+#    "{}".format(config["CORS_HTTP_URL"]),
+#    "{}".format(config["CORS_HTTPS_URL"]),
+#    "{}:{}".format(config["CORS_HTTP_URL"], config["CORS_PORT"]),
+#    "{}:{}".format(config["CORS_HTTPS_URL"], config["CORS_PORT"]),
+#]
+
+origins = ['*']
 
 
 app.add_middleware(
