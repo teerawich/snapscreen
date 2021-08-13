@@ -26,7 +26,7 @@ hover_text = "Holistic Snap Short Agent"
 #    "{}:{}".format(config["CORS_HTTPS_URL"], config["CORS_PORT"]),
 #]
 
-origins = ['*']
+origins = ["*"]
 
 
 app.add_middleware(
@@ -110,4 +110,4 @@ def bye(self):
 if __name__ == '__main__':
     sysTrayIcon = SysTrayIcon("HPCM.ico", hover_text,on_quit=bye)
     sysTrayIcon.start()
-    uvicorn.run(app, host="127.0.0.1", port=int(config["SERVER_PORT"]), log_level="info")    
+    uvicorn.run(app, host="0.0.0.0", port=int(config["SERVER_PORT"]), log_level="info")    
